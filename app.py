@@ -8,20 +8,36 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-MODEL_PATH = "pneumonia_model_v2.keras"       # ← changed
+MODEL_PATH = "pneumonia_model_v2.keras"
 IMG_SIZE = 224
 UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
-# ── Download & Convert Model ──────────────────────────────────────────────────
+# ── Load Model ────────────────────────────────────────────────────────────────
 if not os.path.exists(MODEL_PATH):
+    print("Downloading model...")
     url = "https://drive.google.com/uc?id=1ltiQdKghW1skFS0jubdYF_wz0jANt6KY"
     gdown.download(url, "pneumonia_model_fixed.h5", quiet=False)
-    m = tf.keras.models.load_model("pneumonia_model_fixed.h5", compile=False)
-    m.save(MODEL_PATH)
+
+    print("Converting model...")
+    old_model = tf.keras.models.load_model("pneumonia_model_fixed.h5", compile=False)
+
+    new_model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(224, 224, 3)),
+        tf.keras.layers.MaxPooling2D(2,2),
+        tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D(2,2),
+        tf.keras.layers.Conv2D(128, (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D(2,2),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+
+    new_model.set_weights(old_model.get_weights())
+    new_model.save(MODEL_PATH)
     print("Model converted and saved!")
 
-# ── Load Model ────────────────────────────────────────────────────────────────
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 print("Model loaded successfully")
 
