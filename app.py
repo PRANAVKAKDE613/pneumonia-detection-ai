@@ -26,7 +26,9 @@ if not os.path.exists(MODEL_PATH):
 # LOAD MODEL
 # ==============================
 
+print("Loading model...")
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+print("Model loaded successfully")
 
 IMG_SIZE = 224
 
@@ -92,4 +94,7 @@ def index():
 # ==============================
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    port = int(os.environ.get("PORT", 5000))
+
+    app.run(host="0.0.0.0", port=port)
