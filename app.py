@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
 import tensorflow as tf
-from keras.models import load_model
 import numpy as np
 import cv2
 import os
 import gdown
+
+# Use standalone keras loader for compatibility
+from keras.models import load_model
 
 app = Flask(__name__)
 
@@ -15,10 +17,11 @@ app = Flask(__name__)
 MODEL_PATH = "pneumonia_model.h5"
 
 if not os.path.exists(MODEL_PATH):
+
     print("Downloading model from Google Drive...")
-    
+
     url = "https://drive.google.com/uc?id=1qa8at0d4AWOiI38g0yFTbRnmQEDOaZU_"
-    
+
     gdown.download(url, MODEL_PATH, quiet=False)
 
 
@@ -27,9 +30,10 @@ if not os.path.exists(MODEL_PATH):
 # ==============================
 
 print("Loading model...")
-model = load_model(MODEL_PATH, compile=False)
-print("Model loaded successfully")
 
+model = load_model(MODEL_PATH, compile=False)
+
+print("Model loaded successfully")
 
 IMG_SIZE = 224
 
