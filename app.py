@@ -14,13 +14,10 @@ UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 if not os.path.exists(MODEL_PATH):
-    print("Downloading model...")
     url = "https://drive.google.com/uc?id=1ltiQdKghW1skFS0jubdYF_wz0jANt6KY"
     gdown.download(url, MODEL_PATH, quiet=False)
 
-print("Loading model...")
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-print("Model loaded successfully")
 
 
 def allowed_file(filename):
@@ -30,7 +27,7 @@ def allowed_file(filename):
 def predict_image(path):
     img = cv2.imread(path)
     if img is None:
-        raise ValueError("Could not read the image. Please upload a valid image file.")
+        raise ValueError("Could not read image.")
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     img = img / 255.0
     img = np.reshape(img, (1, IMG_SIZE, IMG_SIZE, 3))
@@ -54,9 +51,9 @@ def index():
     if request.method == "POST":
         file = request.files.get("file")
         if not file or file.filename == "":
-            error = "No file selected. Please upload an X-ray image."
+            error = "No file selected."
         elif not allowed_file(file.filename):
-            error = "Invalid file type. Only PNG and JPG files are allowed."
+            error = "Invalid file type. Only PNG and JPG allowed."
         else:
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             filename = secure_filename(file.filename)
