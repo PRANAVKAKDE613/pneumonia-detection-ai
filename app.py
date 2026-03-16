@@ -5,6 +5,7 @@ import cv2
 import os
 import gdown
 from werkzeug.utils import secure_filename
+from tensorflow.keras.layers import InputLayer
 
 app = Flask(__name__)
 
@@ -17,7 +18,17 @@ if not os.path.exists(MODEL_PATH):
     url = "https://drive.google.com/uc?id=1ltiQdKghW1skFS0jubdYF_wz0jANt6KY"
     gdown.download(url, MODEL_PATH, quiet=False)
 
-model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+class CompatInputLayer(InputLayer):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("batch_shape", None)
+        kwargs.pop("optional", None)
+        super().__init__(*args, **kwargs)
+
+model = tf.keras.models.load_model(
+    MODEL_PATH,
+    compile=False,
+    custom_objects={"InputLayer": CompatInputLayer}
+)
 
 
 def allowed_file(filename):

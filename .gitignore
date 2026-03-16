@@ -2,5 +2,9 @@ venv/
 dataset/
 __pycache__/
 *.pyc
-static/uploads/
 pneumonia_model.h5
+```
+
+Then create an empty placeholder file so the folder gets tracked by Git:
+```
+static/uploads/.gitkeep
