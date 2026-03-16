@@ -8,16 +8,22 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-MODEL_PATH = "pneumonia_model_fixed.h5"
+MODEL_PATH = "pneumonia_model_v2.keras"       # ← changed
 IMG_SIZE = 224
 UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
+# ── Download & Convert Model ──────────────────────────────────────────────────
 if not os.path.exists(MODEL_PATH):
     url = "https://drive.google.com/uc?id=1ltiQdKghW1skFS0jubdYF_wz0jANt6KY"
-    gdown.download(url, MODEL_PATH, quiet=False)
+    gdown.download(url, "pneumonia_model_fixed.h5", quiet=False)
+    m = tf.keras.models.load_model("pneumonia_model_fixed.h5", compile=False)
+    m.save(MODEL_PATH)
+    print("Model converted and saved!")
 
+# ── Load Model ────────────────────────────────────────────────────────────────
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+print("Model loaded successfully")
 
 
 def allowed_file(filename):
@@ -77,4 +83,3 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
