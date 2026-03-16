@@ -3,20 +3,44 @@ import tensorflow as tf
 import numpy as np
 import cv2
 import os
+import gdown
 
 app = Flask(__name__)
 
-model = tf.keras.models.load_model("pneumonia_model.h5")
+# ==============================
+# MODEL DOWNLOAD FROM GOOGLE DRIVE
+# ==============================
+
+MODEL_PATH = "pneumonia_model.h5"
+
+if not os.path.exists(MODEL_PATH):
+
+    print("Downloading model from Google Drive...")
+
+    url = "https://drive.google.com/uc?id=1qa8at0d4AWOiI38g0yFTbRnmQEDOaZU_"
+
+    gdown.download(url, MODEL_PATH, quiet=False)
+
+
+# ==============================
+# LOAD MODEL
+# ==============================
+
+model = tf.keras.models.load_model(MODEL_PATH)
 
 IMG_SIZE = 224
 
 
+# ==============================
+# PREDICTION FUNCTION
+# ==============================
+
 def predict_image(path):
 
     img = cv2.imread(path)
-    img = cv2.resize(img,(IMG_SIZE,IMG_SIZE))
-    img = img/255.0
-    img = np.reshape(img,(1,IMG_SIZE,IMG_SIZE,3))
+    img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
+    img = img / 255.0
+    img = np.reshape(img, (1, IMG_SIZE, IMG_SIZE, 3))
 
     prediction = model.predict(img)[0][0]
 
@@ -25,12 +49,16 @@ def predict_image(path):
         confidence = prediction * 100
     else:
         result = "NORMAL"
-        confidence = (1-prediction) * 100
+        confidence = (1 - prediction) * 100
 
-    return result, round(confidence,2)
+    return result, round(confidence, 2)
 
 
-@app.route("/", methods=["GET","POST"])
+# ==============================
+# MAIN ROUTE
+# ==============================
+
+@app.route("/", methods=["GET", "POST"])
 def index():
 
     result = None
@@ -58,6 +86,10 @@ def index():
         image_path=image_path
     )
 
+
+# ==============================
+# RUN APP
+# ==============================
 
 if __name__ == "__main__":
     app.run(debug=True)
