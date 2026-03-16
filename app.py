@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import tensorflow as tf
+from keras.models import load_model
 import numpy as np
 import cv2
 import os
@@ -14,11 +15,10 @@ app = Flask(__name__)
 MODEL_PATH = "pneumonia_model.h5"
 
 if not os.path.exists(MODEL_PATH):
-
     print("Downloading model from Google Drive...")
-
+    
     url = "https://drive.google.com/uc?id=1qa8at0d4AWOiI38g0yFTbRnmQEDOaZU_"
-
+    
     gdown.download(url, MODEL_PATH, quiet=False)
 
 
@@ -27,8 +27,9 @@ if not os.path.exists(MODEL_PATH):
 # ==============================
 
 print("Loading model...")
-model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+model = load_model(MODEL_PATH, compile=False)
 print("Model loaded successfully")
+
 
 IMG_SIZE = 224
 
@@ -40,8 +41,11 @@ IMG_SIZE = 224
 def predict_image(path):
 
     img = cv2.imread(path)
+
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
+
     img = img / 255.0
+
     img = np.reshape(img, (1, IMG_SIZE, IMG_SIZE, 3))
 
     prediction = model.predict(img)[0][0]
@@ -72,9 +76,11 @@ def index():
         file = request.files["file"]
 
         upload_folder = "static/uploads"
+
         os.makedirs(upload_folder, exist_ok=True)
 
         filepath = os.path.join(upload_folder, file.filename)
+
         file.save(filepath)
 
         result, confidence = predict_image(filepath)
